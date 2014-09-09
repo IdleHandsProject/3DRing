@@ -7425,6 +7425,7 @@ DIO-11598</description>
 <segment>
 <pinref part="IR" gate="G$1" pin="A"/>
 <wire x1="226.06" y1="48.26" x2="205.74" y2="48.26" width="0.1524" layer="91"/>
+<label x="208.28" y="48.26" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="WS2812" class="0">
