@@ -1,6 +1,6 @@
 
 /*
-  3DRing Firmware. Original Firmware for sending password and mouse clicks.
+  3DRing Firmware. Blanks out light with Button Push Version - Used with DEMO of Reciever
   Using SparkFun "GPS Breakout Board" https://www.sparkfun.com/products/11818 Swap wires Rx with Tx on Small cable. Pin 6 of the GPS breakout Board goes to Ground on the 3.3V FTDI ( https://www.sparkfun.com/products/9873 )
   To swap Rx/Tx, swap wires 2 and 3 in reference to the GPS breakout. 
   
@@ -24,6 +24,8 @@ CapacitiveSensor   cs_9_10 = CapacitiveSensor(9, 10);
 CapacitiveSensor   cs_11_12 = CapacitiveSensor(11, 12);
 int R, G, B = 150;
 uint16_t RH, GH, BH = 150;
+int x = 150;
+char dataIn;
 void setup()
 {
   pinMode(4, OUTPUT);
@@ -31,22 +33,62 @@ void setup()
   Serial.begin(9600);
   strip.begin();
   strip.show();
+  //cs_9_10.reset_CS_AutoCal();
   // Start the receiver
   irrecv.enableIRIn();
 
 }
 
 void loop() {
-  long start = millis();
-  long total1 =  cs_9_10.capacitiveSensor(30);
-  long total2 =  cs_11_12.capacitiveSensor(30);
+  if (Serial.available() > 0)    //Check for data on the serial lines.
+  {   
+    x = Serial.parseInt();
+    dataIn = Serial.read();  //Get the character sent by the phone and store it in 'dataIn'.
+    irsend.sendSony(x, 12);
+   
+  }
+  //long start = millis();
+  //long total1 =  cs_9_10.capacitiveSensor(30);
+  //long total2 =  cs_11_12.capacitiveSensor(30);
+  long total1 = 30;
+  long total2 = 30;
+  //Serial.print(millis() - start);        // check on performance in milliseconds
+  //Serial.print("\t");                    // tab character for debug windown spacing
 
+  //Serial.print(total1);                  // print sensor output 1
+  //Serial.print("\t");
+  //Serial.println(total2);
+  x = results.value;
+  colorWipe(strip.Color(x, x, x), 10);
+  //strip.setPixelColor(1, 0xFF,0xFF,0xFF);
+  //strip.show();
+  //delay(100);
+  if (total1 > 150){
+  //for (int i = 0; i < 3; i++) {
+    irsend.sendSony(0xb20, 12); // Sony TV power code
+    Serial.println("Sending");
+    colorWipe(strip.Color(255, 0, 0), 10);
+    delay(100);
+    //strip.Color(255,255,255);
+    
+  //}
+  }
+  if (total2 > 30000){
+  //for (int i = 0; i < 3; i++) {
+    irsend.sendSony(0x000, 12); 
+    Serial.println("Sending");
+    colorWipe(strip.Color(0, 255, 0), 10);
+    delay(100);
+    
+  //}
+  }
+  
   if (irrecv.decode(&results)) {
-    Serial.println(results.value, HEX);
-    if (results.value == 0x1E110) {
+    Serial.println(results.value);
+    if (results.value == 0x000) {
       RH++;
-      Serial.println("Adding Red");
-
+      colorWipe(strip.Color(0, 0, 0), 10);
+      delay(500);
     }
     //RH = String(R, HEX);
     //BH = String(B, HEX);
@@ -54,44 +96,11 @@ void loop() {
 
 
     irrecv.resume(); // Receive the next value
-
-  }
-  
-  Serial.print(millis() - start);        // check on performance in milliseconds
-  Serial.print("\t");                    // tab character for debug windown spacing
-
-  Serial.print(total1);                  // print sensor output 1
-  Serial.print("\t");
-  Serial.println(total2);
-
-  colorWipe(strip.Color(255, 255, 255), 10);
-  //strip.setPixelColor(1, 0xFF,0xFF,0xFF);
-  //strip.show();
-  //delay(100);
-  if (total1 > 50){
-  //for (int i = 0; i < 3; i++) {
-    irsend.sendSony(0xb20, 12); // Sony TV power code
-    Serial.println("Sending");
-    colorWipe(strip.Color(255, 0, 0), 10);
-    delay(100);
-    irrecv.resume();
-    //strip.Color(255,255,255);
     
-  //}
-  }
-  if (total2 > 50){
-  //for (int i = 0; i < 3; i++) {
-    irsend.sendSony(0x000, 12); 
-    Serial.println("Sending");
-    colorWipe(strip.Color(0, 255, 0), 10);
-    delay(100);
-    irrecv.resume();
-    
-  //}
-  }
- 
   
-irrecv.resume();
+
+  }
+
 
 
 }
